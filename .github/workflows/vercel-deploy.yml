@@ -28,6 +28,8 @@ jobs:
 
       - name: Build project
         run: npm run build
+        env:
+          NEXT_PUBLIC_ABLY_API_KEY: ${{ secrets.ABLY_API_KEY }}
 
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
@@ -36,3 +38,5 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' && '--prod' || '' }}
+        env:
+          NEXT_PUBLIC_ABLY_API_KEY: ${{ secrets.ABLY_API_KEY }}
