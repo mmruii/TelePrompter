@@ -1,14 +1,19 @@
 import './globals.css'
+import ClientProviders from '@/components/ClientProviders'
 
 export const metadata = {
   title: 'Teleprompter Web - Podcast',
-  description: 'Teleprompter web para streamers de podcast con post-its de imágenes',
+  description: 'Teleprompter web colaborativo para streamers de podcast',
 }
 
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body>
+        <ClientProviders>
+          {children}
+        </ClientProviders>
+      </body>
     </html>
   )
 }

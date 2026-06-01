@@ -1,57 +1,92 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import TeleprompterScreen from './TeleprompterScreen'
 import PostItLayer from './PostItLayer'
+import { useSocket } from './SocketProvider'
 
 export default function Comunicacion() {
+  const { socket, room } = useSocket()
   const [messages, setMessages] = useState([])
   const [draft, setDraft] = useState('')
-  const inputRef = useRef(null)
+
+  // Socket listeners
+  useEffect(() => {
+    if (!socket) return
+    const onState = (state) => {
+      if (state.comunicacion) {
+        setMessages(state.comunicacion.messages || [])
+        setDraft(state.comunicacion.draft || '')
+      }
+    }
+    const onUpdate = (data) => {
+      setMessages(data.messages || [])
+      setDraft(data.draft || '')
+    }
+    socket.on('room-state', onState)
+    socket.on('com-update', onUpdate)
+    return () => {
+      socket.off('room-state', onState)
+      socket.off('com-update', onUpdate)
+    }
+  }, [socket])
 
   // Capturar teclas en tiempo real
   useEffect(() => {
     const handler = (e) => {
-      // Solo capturar si no hay otro input enfocado
       if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return
 
       if (e.key === 'Enter') {
         if (draft.trim()) {
-          setMessages(prev => [...prev, draft])
+          const newMessages = [...messages, draft]
+          setMessages(newMessages)
+          setDraft('')
+          if (socket && room) socket.emit('com-confirm', { messages: newMessages, draft: '' })
+        } else {
+          setDraft('')
+          if (socket && room) socket.emit('com-keystroke', { messages, draft: '' })
         }
-        setDraft('')
         e.preventDefault()
       } else if (e.key === 'Backspace') {
-        setDraft(prev => prev.slice(0, -1))
+        const newDraft = draft.slice(0, -1)
+        setDraft(newDraft)
+        if (socket && room) socket.emit('com-keystroke', { messages, draft: newDraft })
         e.preventDefault()
       } else if (e.key === 'Delete') {
         setMessages([])
         setDraft('')
+        if (socket && room) socket.emit('com-clear')
         e.preventDefault()
       } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
-        setDraft(prev => prev + e.key)
+        const newDraft = draft + e.key
+        setDraft(newDraft)
+        if (socket && room) socket.emit('com-keystroke', { messages, draft: newDraft })
         e.preventDefault()
       }
     }
 
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [draft])
+  }, [draft, messages, socket, room])
 
   const clearAll = () => {
     setMessages([])
     setDraft('')
+    if (socket && room) socket.emit('com-clear')
   }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-3">
         <div>
-          <h2 className="text-xl font-bold text-white">🎙️ Comunicación en Tiempo Real</h2>
-          <p className="text-gray-400 text-sm mt-1">
-            Escribí directamente (sin hacer click en nada). Cada tecla aparece en pantalla.
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-white flex items-center gap-2">
+            <span className="bg-purple-600/20 p-1.5 rounded-lg">🎙️</span>
+            Comunicación en Tiempo Real
+          </h2>
+          <p className="text-gray-400 text-xs sm:text-sm mt-1">
+            Escribí directamente. Cada tecla se sincroniza con todos.
           </p>
         </div>
-        <button onClick={clearAll} className="px-3 py-1.5 bg-red-600 text-white text-sm rounded hover:bg-red-500">
+        <button onClick={clearAll} className="px-4 py-2 bg-red-600/90 text-white text-xs sm:text-sm rounded-lg hover:bg-red-500 transition-all shadow-md self-start sm:self-auto">
           🗑️ Limpiar
         </button>
       </div>
@@ -73,10 +108,10 @@ export default function Comunicacion() {
         )}
       </TeleprompterScreen>
 
-      <div className="mt-3 text-gray-500 text-xs">
-        Controles: <kbd className="bg-gray-800 px-1 rounded">Enter</kbd> confirmar |
-        <kbd className="bg-gray-800 px-1 rounded">Backspace</kbd> borrar |
-        <kbd className="bg-gray-800 px-1 rounded">Delete</kbd> limpiar todo
+      <div className="mt-3 text-gray-500 text-xs flex flex-wrap gap-x-3 gap-y-1">
+        <span><kbd className="bg-gray-800 px-1.5 py-0.5 rounded text-gray-300">Enter</kbd> confirmar</span>
+        <span><kbd className="bg-gray-800 px-1.5 py-0.5 rounded text-gray-300">Backspace</kbd> borrar</span>
+        <span><kbd className="bg-gray-800 px-1.5 py-0.5 rounded text-gray-300">Delete</kbd> limpiar todo</span>
       </div>
     </div>
   )
