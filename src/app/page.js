@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { useSocket } from '@/components/SocketProvider'
+import { useAbly } from '@/components/AblyProvider'
 import RoomJoin from '@/components/RoomJoin'
 import Comunicacion from '@/components/Comunicacion'
 import ComunicacionEnter from '@/components/ComunicacionEnter'
@@ -15,7 +15,7 @@ const SECTIONS = [
 ]
 
 export default function Home() {
-  const { room } = useSocket()
+  const { room } = useAbly()
   const [activeSection, setActiveSection] = useState('comunicacion-enter')
 
   return (

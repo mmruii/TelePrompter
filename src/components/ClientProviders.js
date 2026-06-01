@@ -1,6 +1,10 @@
 'use client'
-import { SocketProvider } from './SocketProvider'
+import { AblyProvider } from './AblyProvider'
 
 export default function ClientProviders({ children }) {
-  return <SocketProvider>{children}</SocketProvider>
+  return (
+    <AblyProvider>
+      {children}
+    </AblyProvider>
+  )
 }
