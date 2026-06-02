@@ -25,7 +25,7 @@ body {
   position: absolute;
   background: #fef08a;
   border-radius: 4px;
-  box-shadow: 2px 4px 12px rgba(0,0,0,0.4);
+  box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.4);
   padding: 8px;
   cursor: grab;
   z-index: 100;
@@ -59,7 +59,7 @@ body {
   color: #000;
 }
 
-/* Teleprompter display */
+/* Teleprompter display*/
 .teleprompter-display {
   background: #000;
   color: #fff;
@@ -135,9 +135,11 @@ body {
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: #111;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #333;
   border-radius: 3px;
